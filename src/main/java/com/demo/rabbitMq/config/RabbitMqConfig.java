@@ -55,6 +55,25 @@ public class RabbitMqConfig {
     private String dlqQueue;
 
 
+    @Value("${rabbitmq.main.queue}")
+    private String mainQueue;
+
+    @Value("${rabbitmq.main.exchange}")
+    private String mainExchange;
+
+    @Value("${rabbitmq.main.key}")
+    private String mainRoutingKey;
+
+    @Value("${rabbitmq.queue.retry}")
+    private String retryQueue;
+
+    @Value("${rabbitmq.exchange.retry}")
+    private String retryExchange;
+
+    @Value("${rabbitmq.routing.key.retry}")
+    private String retryRoutingKey;
+
+
 
     /*
     * Spring Bean to configure the Rabbit MQ queue
@@ -164,18 +183,18 @@ public class RabbitMqConfig {
 // Main queue
 @Bean
 public Queue mainQueue() {
-    return QueueBuilder.durable("main.queue")
-            .withArgument("x-dead-letter-exchange", "dlx.exchange")
-            .withArgument("x-dead-letter-routing-key", "retry.queue")
+    return QueueBuilder.durable(mainQueue)
+            .withArgument("x-dead-letter-exchange", dlqExchange)
+            .withArgument("x-dead-letter-routing-key", retryRoutingKey)
             .build();
 }
 
 // Retry queue
 @Bean
 public Queue retryQueue() {
-    return QueueBuilder.durable("retry.queue")
-            .withArgument("x-dead-letter-exchange", "main.exchange")  // Route back to main exchange
-            .withArgument("x-dead-letter-routing-key", "main.queue")  // Route back to main queue
+    return QueueBuilder.durable(retryQueue)
+            .withArgument("x-dead-letter-exchange", mainExchange)  // Route back to main exchange
+            .withArgument("x-dead-letter-routing-key", mainRoutingKey)  // Route back to main queue
             .withArgument("x-message-ttl", 5000)  // TTL for retry (in milliseconds)
             .build();
 }
@@ -183,37 +202,37 @@ public Queue retryQueue() {
 // Dead Letter Queue (DLQ)
 @Bean
 public Queue dlqQueue() {
-    return QueueBuilder.durable("dlq.queue").build();
+    return QueueBuilder.durable(dlqQueue).build();
 }
 
 // Main exchange
 @Bean
 public DirectExchange mainExchange() {
-    return new DirectExchange("main.exchange");
+    return new DirectExchange(mainExchange);
 }
 
 // Dead letter exchange (DLX)
 @Bean
 public DirectExchange dlxExchange() {
-    return new DirectExchange("dlx.exchange");
+    return new DirectExchange(dlqExchange);
 }
 
 // Bind main queue to main exchange
 @Bean
 public Binding mainBinding() {
-    return BindingBuilder.bind(mainQueue()).to(mainExchange()).with("main.queue");
+    return BindingBuilder.bind(mainQueue()).to(mainExchange()).with(mainRoutingKey);
 }
 
 // Bind retry queue to dead letter exchange (DLX)
 @Bean
 public Binding retryBinding() {
-    return BindingBuilder.bind(retryQueue()).to(dlxExchange()).with("retry.queue");
+    return BindingBuilder.bind(retryQueue()).to(dlxExchange()).with(retryRoutingKey);
 }
 
 // Bind DLQ to dead letter exchange (DLX)
 @Bean
 public Binding dlqBinding() {
-    return BindingBuilder.bind(dlqQueue()).to(dlxExchange()).with("dlq.queue");
+    return BindingBuilder.bind(dlqQueue()).to(dlxExchange()).with(dlqRoutingnKey);
 }
 
 }

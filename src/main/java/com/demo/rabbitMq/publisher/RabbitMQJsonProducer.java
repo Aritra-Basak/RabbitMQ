@@ -23,6 +23,12 @@ public class RabbitMQJsonProducer {
     @Value("${rabbitmq.routing.key2}")
     private String secondRoutingnKey;
 
+    @Value("${rabbitmq.main.exchange}")
+    private String mainExchange;
+
+    @Value("${rabbitmq.main.key}")
+    private String mainRoutingKey;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQJsonProducer.class);
 
     @Autowired
@@ -40,7 +46,7 @@ public class RabbitMQJsonProducer {
 
     public void sendJsonMessageToMainQueue(User user){
         LOGGER.info(String.format("Json Message sent to main exchange -> %s",user.toString()));
-        rabbitTemplate.convertAndSend("main.exchange","main.queue",user);
+        rabbitTemplate.convertAndSend(mainExchange,mainRoutingKey,user);
     }
 
 

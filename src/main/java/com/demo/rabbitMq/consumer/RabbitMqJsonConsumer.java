@@ -24,8 +24,14 @@ import java.io.IOException;
 @Service
 public class RabbitMqJsonConsumer {
 
-    @Value("${rabbitmq.queue.name2}")
-    private String secondQueue;
+    @Value("${rabbitmq.dlq.exchange.name}")
+    private String dlqExchange;
+
+    @Value("${rabbitmq.dlq.routing.key}")
+    private String dlqRoutingnKey;
+
+    @Value("${rabbitmq.routing.key.retry}")
+    private String retryRoutingKey;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -49,6 +55,8 @@ public class RabbitMqJsonConsumer {
         if (user.getId()< 0) {
             throw new InvalidJsonException("Invalid JSon, User ID cannot be less than 0");
             // System.out.println("RECEIVED MESSAGE WITH ERROR");
+        }else{
+            LOGGER.info("Successfully Consumed the Message From RabbitMQ: " + user.toString());
         }
     }
 
@@ -56,7 +64,7 @@ public class RabbitMqJsonConsumer {
     /**
      * Demonstrating the manual retry functionality and pushing the message to DLQ after unsuccessful retry.
      * */
-    @RabbitListener(queues = "main.queue", ackMode = "MANUAL")
+    @RabbitListener(queues = {"${rabbitmq.main.queue}"}, ackMode = "MANUAL")
     public void processMessage(Message message, Channel channel) {
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
         boolean ackOrNackSent = false;
@@ -99,11 +107,11 @@ public class RabbitMqJsonConsumer {
                 // Increment retry count
                 message.getMessageProperties().getHeaders().put("x-retry-count", retryCount + 1);
                 // Republish to the retry queue
-                rabbitTemplate.send("dlx.exchange", "retry.queue", message);
+                rabbitTemplate.send(dlqExchange, retryRoutingKey, message);
                 LOGGER.info("Message with delivery tag: {} sent to retry queue. Retry count: {}", deliveryTag, retryCount + 1);
             } else {
                 // Max retries reached, send to DLQ
-                rabbitTemplate.send("dlx.exchange", "dlq.queue", message);
+                rabbitTemplate.send(dlqExchange, dlqRoutingnKey, message);
                 LOGGER.info("Message with delivery tag: {} sent to DLQ after max retries", deliveryTag);
             }
             // Ack the original message
