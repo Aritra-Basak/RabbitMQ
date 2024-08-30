@@ -235,4 +235,18 @@ public Binding dlqBinding() {
     return BindingBuilder.bind(dlqQueue()).to(dlxExchange()).with(dlqRoutingnKey);
 }
 
+//************************************************* @Retry **************************************************
+// Queue for demonstrating the @Retry functionality.
+@Bean
+public Queue secondMainQueue() {
+    return QueueBuilder.durable("second.main.queue").build();
+}
+
+//Binding for second.main.queue with the main Exchange with it's respective routing key....
+@Bean
+public Binding secondMainBinding() {
+    return BindingBuilder.bind(secondMainQueue()).to(mainExchange()).with("second.main.routing.key");
+}
+
+
 }

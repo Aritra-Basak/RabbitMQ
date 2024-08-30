@@ -60,4 +60,15 @@ public class MessageController {
             return ResponseEntity.ok("Failure:"+e.getMessage());
         }
     }
+
+    @GetMapping("/publish/main/message")
+    public ResponseEntity<String>sendMainMessage(@RequestParam("message") String message){
+        try{
+            rabbitMQProducer.sendMessageSecondQueue(message);
+            return ResponseEntity.ok("Success: Json Message Sent to Second Rabbit MQ Broker.");
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.ok("Failure:"+e.getMessage());
+        }
+    }
 }

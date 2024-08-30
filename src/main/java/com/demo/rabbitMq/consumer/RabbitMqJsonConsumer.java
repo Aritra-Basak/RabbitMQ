@@ -15,6 +15,9 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import com.rabbitmq.client.Channel;
 
@@ -135,6 +138,8 @@ public class RabbitMqJsonConsumer {
             LOGGER.error("Failed to reject message with delivery tag: {}. Error: {}", deliveryTag, e.getMessage());
         }
     }
+
+
 }
 
 

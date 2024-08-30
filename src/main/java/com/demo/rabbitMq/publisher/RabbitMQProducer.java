@@ -20,6 +20,9 @@ public class RabbitMQProducer  {
     @Value("${rabbitmq.routing.key}")
     private String routingKey;
 
+    @Value("${rabbitmq.main.exchange}")
+    private String mainExchange;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(RabbitMQProducer.class);
 
     @Autowired
@@ -30,5 +33,10 @@ public class RabbitMQProducer  {
     LOGGER.info(String.format("Message Sent -> %s",message));
     //using the convertAndSend to send the message to the exchange via the routingKey
         rabbitTemplate.convertAndSend(exchange,routingKey,message);
+    }
+
+    public void sendMessageSecondQueue(String message){
+        LOGGER.info(String.format("Message Sent to Second Producer -> %s",message));
+        rabbitTemplate.convertAndSend(mainExchange,"second.main.routing.key",message);
     }
 }
