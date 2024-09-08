@@ -10,7 +10,7 @@ This command fetches the RabbitMQ image with the version 3.13.7, including the m
 2. Deploy RabbitMQ Using Docker:
 Deploy RabbitMQ as a Docker container using the following command:
 ### docker run --rm -it -p 15672:15672 -p 5672:5672 rabbitmq:3.13.6-management
-This command starts a RabbitMQ instance with the management plugin enabled, accessible at http://localhost:15672.
+This command starts a RabbitMQ instance with the management plugin enabled, accessible at http://localhost:15672. (Username:Guest; Password:Guest)
 
 3. RabbitMQ Configuration:
 The project includes comprehensive configuration for RabbitMQ, including the setup of exchanges, queues, and their respective bindings. This setup is essential for managing the flow of messages within the application.
